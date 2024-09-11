@@ -10,16 +10,21 @@ A simple service for scraping product information from AliExpress.
 - `API-Key: API_KEY variable`
 
 **Response:**
-```json
+```js
 {
     "title": "string",
     "description": "string",
     "images": ["string"],
     "skus": [
         {
-            "type": "text" | "image",
-            "value": "string",
-            "src": "string"
+            "title": "string",
+            "options": [
+              {
+                "type": "text" | "image",
+                "value": "string",
+                "src": "string" | undefined | null
+              }
+            ]
         }
     ]
 }
