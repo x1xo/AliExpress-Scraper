@@ -1,0 +1,17 @@
+{
+  "name": "aliexpress-scraper",
+  "version": "1.0.0",
+  "main": "./src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^4.20.0",
+    "puppeteer": "^23.3.0"
+  }
+}
