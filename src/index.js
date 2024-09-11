@@ -1,9 +1,18 @@
+import dotenv from "dotenv"
 import e from "express";
 import puppeteer from "puppeteer";
+
+dotenv.config();
+
 const app = e();
 const browser = await puppeteer.launch({headless: false, defaultViewport: {width: 1366, height: 768}});
 
 app.get("/item/:id", async (req, res) => {
+    const auth = req.headers["api-key"];
+    if(!auth || auth != process.env.API_KEY) {
+        return res.end()
+    }
+
     const url = `https://www.aliexpress.com/item/${req.params.id}.html`;
     console.log(`request for ${url}`);
     const page = await browser.newPage();
@@ -54,11 +63,11 @@ app.get("/item/:id", async (req, res) => {
             const imageOptions = skuBlock.querySelectorAll(".sku-item--image--jMUnnGA img");
             if (imageOptions.length > 0) {
                 imageOptions.forEach((img) => {
-                options.push({
-                    type: "image",
-                    value: img.getAttribute("alt"),  // Option name, e.g., "black", "white"
-                    src: img.getAttribute("src"),   // Image URL
-                });
+                    options.push({
+                        type: "image",
+                        value: img.getAttribute("alt"),  // Option name, e.g., "black", "white"
+                        src: img.getAttribute("src"),   // Image URL
+                    });
                 });
             }
 
@@ -66,10 +75,10 @@ app.get("/item/:id", async (req, res) => {
             const textOptions = skuBlock.querySelectorAll(".sku-item--text--hYfAukP");
             if (textOptions.length > 0) {
                 textOptions.forEach((textOption) => {
-                options.push({
-                    type: "text",
-                    value: textOption.textContent.trim(),  // Option value, e.g., "S", "M", etc.
-                });
+                    options.push({
+                        type: "text",
+                        value: textOption.textContent.trim(),  // Option value, e.g., "S", "M", etc.
+                    });
                 });
             }
 
@@ -80,12 +89,10 @@ app.get("/item/:id", async (req, res) => {
         });
     });
 
-    console.log(skus);
-
     res.send({ title, images: imageUrls, description, skus });
     await page.close();
 })
-
+// Scroll till the end of the page
 async function autoScroll(page){
     await page.evaluate(async () => {
         await new Promise((resolve) => {
@@ -105,4 +112,4 @@ async function autoScroll(page){
     }).catch(()=>{});
 }
 
-app.listen(3000, () => console.log("Server running on port 3000"));
+app.listen(process.env.PORT || 3000, () => console.log(`Server running on port ${process.env.PORT || 3000}`));
