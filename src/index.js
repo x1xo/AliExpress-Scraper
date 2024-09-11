@@ -44,7 +44,7 @@ app.get("/item/:id", async (req, res) => {
 
     autoScroll(page);
     
-    await page.waitForSelector("#product-description", {timeout: 5000});
+    await page.waitForSelector("#product-description", {timeout: 5000}).catch(() => {});
     const description = await page.$eval("#product-description", (el) => el.innerText);
 
     const skuSelector = ".sku-item--property--HuasaIz";
