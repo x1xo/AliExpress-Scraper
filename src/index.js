@@ -7,7 +7,7 @@ dotenv.config();
 const app = e();
 app.disable("x-powered-by");
 
-const browser = await puppeteer.launch({headless: false, defaultViewport: {width: 1366, height: 768}});
+const browser = await puppeteer.launch({headless: true, defaultViewport: {width: 1366, height: 768}});
 
 app.get("/item/:id", async (req, res) => {
     const auth = req.headers["api-key"];
