@@ -5,6 +5,8 @@ import puppeteer from "puppeteer";
 dotenv.config();
 
 const app = e();
+app.disable("x-powered-by");
+
 const browser = await puppeteer.launch({headless: false, defaultViewport: {width: 1366, height: 768}});
 
 app.get("/item/:id", async (req, res) => {
@@ -91,6 +93,10 @@ app.get("/item/:id", async (req, res) => {
 
     res.send({ title, images: imageUrls, description, skus });
     await page.close();
+})
+
+app.all("*", async (req, res) => {
+    res.end();
 })
 // Scroll till the end of the page
 async function autoScroll(page){
