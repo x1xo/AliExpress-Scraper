@@ -13,6 +13,7 @@ A simple service for scraping product information from AliExpress.
 ```js
 {
     "title": "string",
+    "price": "string",
     "description": "string",
     "images": ["string"],
     "skus": [

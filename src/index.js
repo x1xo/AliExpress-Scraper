@@ -7,7 +7,7 @@ dotenv.config();
 const app = e();
 app.disable("x-powered-by");
 
-const browser = await puppeteer.launch({headless: true, defaultViewport: {width: 1366, height: 768}});
+const browser = await puppeteer.launch({headless: false, defaultViewport: {width: 1366, height: 768}});
 
 app.get("/item/:id", async (req, res) => {
     const auth = req.headers["api-key"];
@@ -15,10 +15,17 @@ app.get("/item/:id", async (req, res) => {
         return res.end()
     }
 
-    const url = `https://www.aliexpress.com/item/${req.params.id}.html`;
+    const url = `https://www.aliexpress.us/item/${req.params.id}.html?gatewayAdapt=glo2usa`;
     console.log(`request for ${url}`);
     const page = await browser.newPage();
+    page.setCookie({ 
+        name: "aep_usuc_f", 
+        domain: ".aliexpress.us",
+        value: "site=usa&province=922865760000000000&city=922865765760000000&c_tp=USD&x_alimid=2450304010&isb=y&region=US&b_locale=en_US&ae_u_p_s=2"
+    })
+
     await page.goto(url);
+
 
     const title = await page.title();
 
@@ -42,13 +49,15 @@ app.get("/item/:id", async (req, res) => {
         imageUrls[i] = split[0]
     }
 
+    const price = await page.$eval(".product-price-value", (el) => el.innerText).catch(() => null);
+
     autoScroll(page);
     
     await page.waitForSelector("#product-description", {timeout: 5000}).catch(() => {});
-    const description = await page.$eval("#product-description", (el) => el.innerText);
+    const description = await page.$eval("#product-description", (el) => el.innerText).catch(() => null);
 
     const skuSelector = ".sku-item--property--HuasaIz";
-    await page.waitForSelector(skuSelector);
+    await page.waitForSelector(skuSelector).catch(() => {});
 
     // Extract SKUs and their options
     const skus = await page.evaluate(() => {
@@ -89,9 +98,9 @@ app.get("/item/:id", async (req, res) => {
                 options: options.length > 0 ? options : []  // If no options, return empty array
             };
         });
-    });
+    }).catch(() => []);
 
-    res.send({ title, images: imageUrls, description, skus });
+    res.send({ title, price, description, skus, images: imageUrls, });
     await page.close();
 })
 
