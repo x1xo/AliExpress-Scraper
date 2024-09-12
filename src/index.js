@@ -9,20 +9,19 @@ app.disable("x-powered-by");
 
 const browser = await puppeteer.launch({headless: false, defaultViewport: {width: 1366, height: 768}});
 
-app.get("/item/:id", async (req, res) => {
+app.get("/aliexpress", async (req, res) => {
     const auth = req.headers["api-key"];
     if(!auth || auth != process.env.API_KEY) {
         return res.end()
     }
 
-    const url = `https://www.aliexpress.us/item/${req.params.id}.html?gatewayAdapt=glo2usa`;
+    const url = req.query.url;
+    if(!url) {
+        return res.end();
+    }
+
     console.log(`request for ${url}`);
     const page = await browser.newPage();
-    page.setCookie({ 
-        name: "aep_usuc_f", 
-        domain: ".aliexpress.us",
-        value: "site=usa&province=922865760000000000&city=922865765760000000&c_tp=USD&x_alimid=2450304010&isb=y&region=US&b_locale=en_US&ae_u_p_s=2"
-    })
 
     await page.goto(url);
 

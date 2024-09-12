@@ -4,10 +4,13 @@ A simple service for scraping product information from AliExpress.
 
 ## Fetch Data
 
-### GET `/item/:id`
+### GET `/aliexpress`
 
 **Headers:**  
 - `API-Key: API_KEY variable`
+
+**Query Params:**
+- `url`: `string` - The URL of the product on AliExpress.
 
 **Response:**
 ```js
