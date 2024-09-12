@@ -9,6 +9,8 @@ app.disable("x-powered-by");
 
 const browser = await puppeteer.launch({headless: false, defaultViewport: {width: 1366, height: 768}});
 
+const cache = new Map();
+
 app.get("/aliexpress", async (req, res) => {
     const auth = req.headers["api-key"];
     if(!auth || auth != process.env.API_KEY) {
@@ -18,6 +20,12 @@ app.get("/aliexpress", async (req, res) => {
     const url = req.query.url;
     if(!url) {
         return res.end();
+    }
+
+    const parsedURL = new URL(url);
+    const cacheEntry = cache.get(parsedURL.origin+parsedURL.pathname);
+    if(cacheEntry && cacheEntry.createdAt+60*60*1000 > Date.now()) {
+        return res.send(cacheEntry);
     }
 
     console.log(`request for ${url}`);
@@ -53,7 +61,11 @@ app.get("/aliexpress", async (req, res) => {
     autoScroll(page);
     
     await page.waitForSelector("#product-description", {timeout: 5000}).catch(() => {});
-    const description = await page.$eval("#product-description", (el) => el.innerText).catch(() => null);
+    const description = await page.$eval("#product-description", (el) => el.innerText).catch((err) => err);
+    if(description instanceof Error) {
+        await page.close()
+        return res.sendStatus(500);
+    }
 
     const skuSelector = ".sku-item--property--HuasaIz";
     await page.waitForSelector(skuSelector).catch(() => {});
@@ -99,6 +111,7 @@ app.get("/aliexpress", async (req, res) => {
         });
     }).catch(() => []);
 
+    cache.set(parsedURL.origin+parsedURL.pathname, { title, price, description, skus, images: imageUrls, createdAt: Date.now() });
     res.send({ title, price, description, skus, images: imageUrls, });
     await page.close();
 })
