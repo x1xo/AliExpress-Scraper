@@ -7,7 +7,16 @@ dotenv.config();
 const app = e();
 app.disable("x-powered-by");
 
-const browser = await puppeteer.launch({headless: false, defaultViewport: {width: 1366, height: 768}});
+const options = {
+    headless: process.env.ENV==="production",
+    defaultViewport: {width: 1366, height: 768},
+}
+if(process.env.ENV==="production") {
+    options.executablePath= '/usr/bin/chromium-browser'
+    options.args = ['--no-sandbox', '--disable-setuid-sandbox']
+}
+
+const browser = await puppeteer.launch(options);
 
 const cache = new Map();
 
